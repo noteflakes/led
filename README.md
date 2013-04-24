@@ -1,4 +1,6 @@
 led
 ===
 
-Redis-based ORM for node.js
+Redis Lua scripting using Ruby.
+
+More info to come soon...
