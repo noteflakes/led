@@ -22,3 +22,21 @@ describe 'Led' do
     Led.t1.should == 1
   end
 end
+
+describe 'Led.preprocess' do
+  it 'should interpolate strings correctly' do
+    Led.add(:t1, 'return "abc#{ARGV[1]}"')
+    Led.t1('def').should == 'abcdef'
+
+    
+    Led.add(:t1, 'local s = "abc#{ARGV[1]}";return "#{s}:#{ARGV[2]}"')
+    Led.t1('def', 'ghi').should == 'abcdef:ghi'
+  end
+  
+  it 'should convert redis.call shortcuts' do
+    Led.add(:t1, 'SET(ARGV[1], ARGV[2])')
+    Led.t1('abc', 'def')
+    
+    Led.conn.get('abc').should == 'def'
+  end
+end

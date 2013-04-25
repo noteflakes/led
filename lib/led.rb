@@ -16,6 +16,9 @@ module Led
   def self.add(name, script)
     @shas ||= {}
     @scripts ||= {}
+
+    script = preprocess(script)
+    
     @shas[name.to_sym] = conn.script('load', script)
     @scripts[name.to_sym] = script
   end
@@ -34,11 +37,18 @@ module Led
       conn.evalsha(@shas[m], [], args)
     end
   end
-  # 
-  # def self.exec(ruby_source)
-  #   lua_source = Led::Translator.translate(ruby_source)
-  #   puts "*****************************"
-  #   p lua_source
-  #   conn.eval(lua_source)
-  # end
+  
+  def self.preprocess(script)
+    script.
+      # redis.call shorthand
+      gsub(/([A-Z]+)\(/) {"redis.call('#{$1}',"}.
+      # string interpolation
+      gsub(/\#\{([^\}]+)\}/) {"\" .. #{$1} .. \""}.
+      # remove empty string concatenation
+      gsub(/\s\.\.\s''/, ' ').
+      gsub(/[^\\]''\s\.\.\s/, ' ')
+      # 
+      # .replace(/\__include '([^\s]+)'/g, (m, name) => @loadScript("_include/#{name}.lua"))
+    
+  end
 end
