@@ -1,6 +1,3 @@
-led
-===
+Easy Lua scripting for Redis
+============================
 
-Redis Lua scripting using Ruby.
-
-More info to come soon...
