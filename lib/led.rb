@@ -15,7 +15,9 @@ module Led
   
   def self.add(name, script)
     @shas ||= {}
+    @scripts ||= {}
     @shas[name.to_sym] = conn.script('load', script)
+    @scripts[name.to_sym] = script
   end
   
   alias_method :orig_method_missing, :method_missing
@@ -24,6 +26,12 @@ module Led
       conn.evalsha(@shas[m], [], args)
     else
       orig_method_missing(m, *args)
+    end
+  rescue Redis::CommandError => e
+    # detect if script needs to be reloaded
+    if e.message =~ /NOSCRIPT/
+      @shas[m] = conn.script('load', @scripts[m])
+      conn.evalsha(@shas[m], [], args)
     end
   end
   # 

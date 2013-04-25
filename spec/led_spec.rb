@@ -10,6 +10,15 @@ describe 'Led.add' do
     
     Led.t2(1,2,3).should == %w{1 2 3}
   end
-  
-  
+end
+
+describe 'Led' do
+  it 'should reload the script automatically if missing' do
+    Led.add(:t1, 'return 1')
+    Led.t1.should == 1
+    
+    Led.conn.script('flush')
+    
+    Led.t1.should == 1
+  end
 end
