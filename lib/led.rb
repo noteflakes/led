@@ -13,7 +13,7 @@ module Led
     @conn ||= Redis.new
   end
   
-  def self.add(name, script)
+  def self.add_script(name, script)
     @shas ||= {}
     @scripts ||= {}
 
@@ -23,18 +23,23 @@ module Led
     @scripts[name.to_sym] = script
   end
   
-  alias_method :orig_method_missing, :method_missing
   def self.method_missing(m, *args)
-    if @shas && @shas[m]
-      conn.evalsha(@shas[m], [], args)
-    else
-      orig_method_missing(m, *args)
+    unless @shas && @shas[m]
+      @script_dir ? load_script(m) : super
     end
+    
+    run_script(m, *args)
+  end
+  
+  def self.run_script(m, *args)
+    conn.evalsha(@shas[m], [], args)
   rescue Redis::CommandError => e
     # detect if script needs to be reloaded
     if e.message =~ /NOSCRIPT/
       @shas[m] = conn.script('load', @scripts[m])
       conn.evalsha(@shas[m], [], args)
+    else
+      raise e
     end
   end
   
@@ -46,9 +51,26 @@ module Led
       gsub(/\#\{([^\}]+)\}/) {"\" .. #{$1} .. \""}.
       # remove empty string concatenation
       gsub(/\s\.\.\s''/, ' ').
-      gsub(/[^\\]''\s\.\.\s/, ' ')
-      # 
-      # .replace(/\__include '([^\s]+)'/g, (m, name) => @loadScript("_include/#{name}.lua"))
+      gsub(/[^\\]''\s\.\.\s/, ' ').
+      gsub(/\__include '([^\s]+)'/) {process_include($1)}
+  end
+  
+  def self.process_include(file)
+    raise "Script directory not specified" unless @script_dir
     
+    IO.read(File.join(@script_dir, "#{file}.lua"))
+  end
+  
+  def self.script_dir=(dir)
+    @script_dir = dir
+  end
+  
+  def self.script_dir
+    @script_dir
+  end
+  
+  def self.load_script(name)
+    script = IO.read(File.join(script_dir, "#{name}.lua"))
+    add_script(name, script)
   end
 end
