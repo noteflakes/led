@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'led'
-  s.version     = '0.1'
+  s.version     = '0.1.0'
   s.date        = '2013-04-26'
   s.summary     = 'Redis script preprocessor'
   s.description = 'Easy Lua scripting for Redis'
