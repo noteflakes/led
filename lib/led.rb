@@ -39,12 +39,14 @@ module Led
       @shas[m] = conn.script('load', @scripts[m])
       conn.evalsha(@shas[m], [], args)
     else
-      handle_command_error(e)
+      handle_command_error(e, m)
     end
   end
   
-  def self.handle_command_error(e)
-    if e.message =~ /([A-Z][a-zA-Z_0-9]+)(?:\:(.+))?/
+  def self.handle_command_error(e, method)
+    if e.message =~ /^ERR.+user_script\:([0-9]+)\: (.+)$/
+      raise e, "#{method}.lua:#{$1}: #{$2}"
+    elsif e.message =~ /^([A-Z][a-zA-Z_0-9]+)(?:\:(.+))?/
       klass = (Object.const_get($1) rescue Redis::CommandError)
       raise klass, ($2 || '')
     else
