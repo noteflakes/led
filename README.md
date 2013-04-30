@@ -3,25 +3,36 @@ Easy Lua scripting for Redis
 
 Led makes managing Redis Lua scripts simple and easy. Features:
 
-- Install scripts as Ruby methods:
+## Installing
+```
+gem install led
+```
+
+## How to use it
+
+### Install scripts as Ruby methods:
+
 ```ruby
 Led.add_script(:add, 'return tonumber(ARGV[1])+tonumber(ARGV[2])')
 Led.add(12, 34) # => 46
 ```
 
-- String interpolation for lua:
+### String interpolation for lua:
+
 ```ruby
 Led.add_script(:interpolate, 'return "abc_#{ARGV[1]}"')
 Led.interpolate('def') # => "abc_def"
 ```
 
-- Shorthand for redis calls:
-```
+### Shorthand for redis calls:
+
+```ruby
 Led.add_script(:set, 'SET(ARGV[1], ARGV[2])') # silly example, I know
 # same as redis.call('set', ARGV[1], ARGV[2])
 ```
                           
-- Reuse code by using includes:
+### Reuse code by using includes:
+
 ```lua
 -- helpers.lua
 local function add(x, y)
@@ -41,7 +52,3 @@ Led.script_dir = '.'
 Led.test(1, 2) # => 3
 ```
     
-# Installing
-```
-gem install led
-```

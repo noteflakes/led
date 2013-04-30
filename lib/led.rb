@@ -39,6 +39,15 @@ module Led
       @shas[m] = conn.script('load', @scripts[m])
       conn.evalsha(@shas[m], [], args)
     else
+      handle_command_error(e)
+    end
+  end
+  
+  def self.handle_command_error(e)
+    if e.message =~ /([A-Z][a-zA-Z_0-9]+)(?:\:(.+))?/
+      klass = (Object.const_get($1) rescue Redis::CommandError)
+      raise klass, ($2 || '')
+    else
       raise e
     end
   end
