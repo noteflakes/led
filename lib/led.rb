@@ -4,6 +4,8 @@ require 'bundler/setup'
 require 'hiredis'
 require 'redis'
 
+require File.join(__dir__, 'model')
+
 module Led
   def self.conn= (conn)
     @conn = conn

@@ -5,6 +5,3 @@ RSpec::Core::RakeTask.new(:spec) do |config|
 end
 
 task :default => :spec
-
-# spec/spec_helper.rb
-require 'rspec/autorun' # **add this**
